@@ -7,6 +7,7 @@ import android.os.StrictMode;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
@@ -50,19 +51,22 @@ public class AgendaMedicoDAO {
      * Método que seleciona uma AgendaMedico, através de um Id passado por parâmetro
      */
     public AgendaMedico selecionarPorId(int id) {
-        AgendaMedico agendaMedico = null;
-        Cursor cursor;
-        String sql = "select * from " + mBanco.TB_AGENDA_MEDICO +
-                " where " + mBanco.ID_AGENDA_MEDICO + "=" + id;
+        AgendaMedico agendaMedico = new AgendaMedico();
 
-        db = mBanco.getReadableDatabase();
+        try {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
 
-        cursor = db.rawQuery(sql, null);
+            String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + id, false);
 
-        while (cursor.moveToNext())
-            agendaMedico = getAgendaMedico(cursor);
-
-        db.close();
+            if (resposta[0].equals("200")) {
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                agendaMedico = g.fromJson(resposta[1], AgendaMedico.class);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return agendaMedico;
     }
@@ -74,25 +78,49 @@ public class AgendaMedicoDAO {
      * Método que retorna uma lista de AgendaMedico, através do valor da Situação, passado por parâmetro
      */
     public List<AgendaMedico> listarPorSituacao(Situacao situacao) {
-        Cursor cursor;
-        List<AgendaMedico> agendasMedico = new ArrayList<>();
-        String sql = "select * from " + mBanco.TB_AGENDA_MEDICO +
-                " where " + mBanco.SITUACAO_AGENDA_MEDICO + " = '" + situacao.getNome() + "'";
-
-        db = mBanco.getReadableDatabase();
-        cursor = db.rawQuery(sql, null);
+        List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            while (cursor.moveToNext())
-                agendasMedico.add(getAgendaMedico(cursor));
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "listarPorSituacao/" +
+                    situacao.getNome(), false);
+
+            if (resposta[0].equals("200")) {
+                String json = resposta[1];
+
+                if (json.equals("null")) {
+                    return null;
+                }
+
+                if (!json.contains("[")) {
+                    StringBuilder stringBuilder = new StringBuilder(json);
+                    stringBuilder.insert(10, "[");
+                    stringBuilder.insert(json.length(), "]");
+
+                    json = stringBuilder.toString();
+                }
+
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+
+                JsonParser parser = new JsonParser();
+
+                JsonArray array = null;
+
+                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
+
+                for (int i = 0; i < array.size(); i++) {
+                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
+                    agendas.add(agenda);
+                }
+            }
         } catch (Exception e) {
-            Log.e("AgendaMedicoDAO.listar()", e.getMessage());
-        } finally {
-            cursor.close();
-            db.close();
+            Log.e("ErroAgendaListarPorSituacao", e.getMessage());
         }
 
-        return agendasMedico;
+        return agendas;
     }
 
     /**
@@ -104,19 +132,17 @@ public class AgendaMedicoDAO {
      * e retorna True caso seja bem-sucedida e False caso não seja.
      */
     public boolean alterar(int idAgendaMedico, Situacao situacao) {
-        String sql = "update " + mBanco.TB_AGENDA_MEDICO +
-                " set " + mBanco.SITUACAO_AGENDA_MEDICO + " = '" + situacao.getNome() +
-                "' where " + mBanco.ID_AGENDA_MEDICO + " = " + idAgendaMedico;
-
-        db = mBanco.getWritableDatabase();
-
         try {
-            db.execSQL(sql);
-            return true;
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "alterar/" + idAgendaMedico + "/" + situacao.getNome(), false);
+
+            return !resposta[1].isEmpty();
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
-        } finally {
-            db.close();
         }
     }
 
@@ -152,7 +178,7 @@ public class AgendaMedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new Gson();
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
 
                 JsonParser parser = new JsonParser();
 
@@ -166,8 +192,9 @@ public class AgendaMedicoDAO {
                 }
             }
         } catch (Exception e) {
-            Log.e("ErroListarAgendas", e.getMessage());
+            Log.e("ErroAgendaListarPorLocalAtendimento", e.getMessage());
         }
+
         return agendas;
     }
 
@@ -178,26 +205,49 @@ public class AgendaMedicoDAO {
      * Método que retorna uma lista de AgendaMedico, de um determinado medico
      */
     public List<AgendaMedico> listarPorMedico(Medico medico) {
-        Cursor cursor;
-        List<AgendaMedico> agendasMedico = new ArrayList<>();
-        String sql = "select * from " + mBanco.TB_AGENDA_MEDICO +
-                " where " + mBanco.SITUACAO_AGENDA_MEDICO + " = '" + Situacao.DISPONIVEL.getNome() +
-                "' and " + mBanco.MEDICO_AGENDA_MEDICO + " = " + medico.getId();
-
-        db = mBanco.getReadableDatabase();
-        cursor = db.rawQuery(sql, null);
+        List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            while (cursor.moveToNext())
-                agendasMedico.add(getAgendaMedico(cursor));
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "listarPorMedico/" +
+                    medico.getId(), false);
+
+            if (resposta[0].equals("200")) {
+                String json = resposta[1];
+
+                if (json.equals("null")) {
+                    return null;
+                }
+
+                if (!json.contains("[")) {
+                    StringBuilder stringBuilder = new StringBuilder(json);
+                    stringBuilder.insert(10, "[");
+                    stringBuilder.insert(json.length(), "]");
+
+                    json = stringBuilder.toString();
+                }
+
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+
+                JsonParser parser = new JsonParser();
+
+                JsonArray array = null;
+
+                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
+
+                for (int i = 0; i < array.size(); i++) {
+                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
+                    agendas.add(agenda);
+                }
+            }
         } catch (Exception e) {
-            Log.e("AgendaMedicoDAO.listar()", e.getMessage());
-        } finally {
-            cursor.close();
-            db.close();
+            Log.e("ErroAgendaListarPorMedico", e.getMessage());
         }
 
-        return agendasMedico;
+        return agendas;
     }
 
     /**
@@ -207,57 +257,49 @@ public class AgendaMedicoDAO {
      * Método que retorna uma lista de AgendaMedico, através de uma data passada por parâmetro
      */
     public List<AgendaMedico> listarPorData(java.util.Date data) {
-        Cursor cursor;
-        List<AgendaMedico> agendasMedico = new ArrayList<>();
-        String sql = "select * from " + mBanco.TB_AGENDA_MEDICO +
-                " where " + mBanco.SITUACAO_AGENDA_MEDICO + " = '" + Situacao.DISPONIVEL.getNome() +
-                "' and " + mBanco.DATA_AGENDA_MEDICO + " = '" + Util.convertDateToStrInvertido(data) + "'";
-
-        db = mBanco.getReadableDatabase();
-        cursor = db.rawQuery(sql, null);
+        List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            while (cursor.moveToNext())
-                agendasMedico.add(getAgendaMedico(cursor));
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "listarPorData/" +
+                    Util.convertDateToStrInvertido(data), false);
+
+            if (resposta[0].equals("200")) {
+                String json = resposta[1];
+
+                if (json.equals("null")) {
+                    return null;
+                }
+
+                if (!json.contains("[")) {
+                    StringBuilder stringBuilder = new StringBuilder(json);
+                    stringBuilder.insert(10, "[");
+                    stringBuilder.insert(json.length(), "]");
+
+                    json = stringBuilder.toString();
+                }
+
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+
+                JsonParser parser = new JsonParser();
+
+                JsonArray array = null;
+
+                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
+
+                for (int i = 0; i < array.size(); i++) {
+                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
+                    agendas.add(agenda);
+                }
+            }
         } catch (Exception e) {
-            Log.e("AgendaMedicoDAO.listar()", e.getMessage());
-        } finally {
-            cursor.close();
-            db.close();
+            Log.e("ErroAgendaListarPorData", e.getMessage());
         }
 
-        return agendasMedico;
+        return agendas;
     }
 
-    /**
-     * @param cursor
-     * @return AgendaMedico
-     * <p/>
-     * Método que recebe por parâmetro um cursor, na linha onde o ponteiro está posicionado, e retorna
-     * um Bean de AgendaMedico.
-     * Utilizado em todos os métodos de seleção e listagem desta classe
-     */
-    private AgendaMedico getAgendaMedico(Cursor cursor) {
-        AgendaMedico agendaMedico = new AgendaMedico();
-
-        agendaMedico.setId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.ID_AGENDA_MEDICO)));
-        agendaMedico.setMedico(mMedicoDAO.selecionarPorId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.MEDICO_AGENDA_MEDICO))));
-        agendaMedico.setData(Date.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(mBanco.DATA_AGENDA_MEDICO))));
-        agendaMedico.setHora(cursor.getString(cursor.getColumnIndexOrThrow(mBanco.HORA_AGENDA_MEDICO)));
-        agendaMedico.setLocalAtendimento(mLocalAtendimentoDAO.selecionarPorId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.LOCAL_ATENDIMENTO_AGENDA_MEDICO))));
-
-        switch (cursor.getString(cursor.getColumnIndexOrThrow(mBanco.SITUACAO_AGENDA_MEDICO))) {
-            case "D":
-                agendaMedico.setSituacao(Situacao.DISPONIVEL);
-                break;
-            case "M":
-                agendaMedico.setSituacao(Situacao.MARCADA);
-                break;
-            case "C":
-                agendaMedico.setSituacao(Situacao.CANCELADA);
-                break;
-        }
-
-        return agendaMedico;
-    }
 }

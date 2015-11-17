@@ -8,6 +8,7 @@ import br.com.prova.Enumerators.Situacao;
  * Created by jorge on 27/09/2015.
  */
 public class AgendaMedico {
+
     private int id;
     private Medico medico;
     private Date data;

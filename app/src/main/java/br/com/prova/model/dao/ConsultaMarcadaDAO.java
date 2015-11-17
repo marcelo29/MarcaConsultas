@@ -4,7 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.StrictMode;
 import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -14,7 +20,9 @@ import java.util.List;
 import br.com.prova.Enumerators.Situacao;
 import br.com.prova.model.bean.ConsultaMarcada;
 import br.com.prova.model.bean.Usuario;
+import br.com.prova.util.Util;
 import br.com.prova.ws.ConfiguracoesWS;
+import br.com.prova.ws.WebServiceCliente;
 
 /**
  * Created by Éverdes on 30/09/2015.
@@ -42,25 +50,48 @@ public class ConsultaMarcadaDAO {
      * Método que retorna uma lista de ConsultaMarcada onde o valor do campo Situação seja igual a 'M'
      */
     public List listarMarcadas() {
-        Cursor cursor;
-        List<ConsultaMarcada> consultasMarcadas = new ArrayList<>();
-        String sql = "select * from " + mBanco.TB_CONSULTA_MARCADA +
-                " where " + mBanco.SITUACAO_CONSULTA_MARCADA + " = '" + Situacao.MARCADA.getNome() + "'";
-
-        db = mBanco.getReadableDatabase();
-        cursor = db.rawQuery(sql, null);
+        List<ConsultaMarcada> consultas = new ArrayList<>();
 
         try {
-            while (cursor.moveToNext())
-                consultasMarcadas.add(getConsultaMarcada(cursor));
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "listarMarcadas", false);
+
+            if (resposta[0].equals("200")) {
+                String json = resposta[1];
+
+                if (json.equals("null")) {
+                    return null;
+                }
+
+                if (!json.contains("[")) {
+                    StringBuilder stringBuilder = new StringBuilder(json);
+                    stringBuilder.insert(10, "[");
+                    stringBuilder.insert(json.length(), "]");
+
+                    json = stringBuilder.toString();
+                }
+
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+
+                JsonParser parser = new JsonParser();
+
+                JsonArray array = null;
+
+                array = parser.parse(json).getAsJsonObject().getAsJsonArray("consultas");
+
+                for (int i = 0; i < array.size(); i++) {
+                    ConsultaMarcada consulta = g.fromJson(array.get(i), ConsultaMarcada.class);
+                    consultas.add(consulta);
+                }
+            }
         } catch (Exception e) {
-            Log.e("LocalAtendimento.listar()", e.getMessage());
-        } finally {
-            cursor.close();
-            db.close();
+            Log.e("ErroConsultaListar", e.getMessage());
         }
 
-        return consultasMarcadas;
+        return consultas;
     }
 
     /**
@@ -70,26 +101,48 @@ public class ConsultaMarcadaDAO {
      * Método que lista todas as Consultas Marcadas pelo Usuário passado por parâmetro
      */
     public List<ConsultaMarcada> listarMarcadasPorUsuario(Usuario usuario) {
-        Cursor cursor;
-        List<ConsultaMarcada> consultasMarcadas = new ArrayList<>();
-        String sql = "select * from " + mBanco.TB_CONSULTA_MARCADA + " where " +
-                mBanco.USUARIO_CONSULTA_MARCADA + "=" + usuario.getId() +
-                " and " + mBanco.SITUACAO_CONSULTA_MARCADA + " = '" + Situacao.MARCADA.getNome() + "'";
-
-        db = mBanco.getReadableDatabase();
-        cursor = db.rawQuery(sql, null);
+        List<ConsultaMarcada> consultas = new ArrayList<>();
 
         try {
-            while (cursor.moveToNext())
-                consultasMarcadas.add(getConsultaMarcada(cursor));
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "listarMarcadas/" + usuario.getId(), false);
+
+            if (resposta[0].equals("200")) {
+                String json = resposta[1];
+
+                if (json.equals("null")) {
+                    return null;
+                }
+
+                if (!json.contains("[")) {
+                    StringBuilder stringBuilder = new StringBuilder(json);
+                    stringBuilder.insert(10, "[");
+                    stringBuilder.insert(json.length(), "]");
+
+                    json = stringBuilder.toString();
+                }
+
+                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+
+                JsonParser parser = new JsonParser();
+
+                JsonArray array = null;
+
+                array = parser.parse(json).getAsJsonObject().getAsJsonArray("consultas");
+
+                for (int i = 0; i < array.size(); i++) {
+                    ConsultaMarcada consulta = g.fromJson(array.get(i), ConsultaMarcada.class);
+                    consultas.add(consulta);
+                }
+            }
         } catch (Exception e) {
-            Log.e("ConsultaMarcada.listarPorUsuario()", e.getMessage());
-        } finally {
-            cursor.close();
-            db.close();
+            Log.e("ErroConsultaListarPorUsuario", e.getMessage());
         }
 
-        return consultasMarcadas;
+        return consultas;
     }
 
     /**
@@ -129,54 +182,24 @@ public class ConsultaMarcadaDAO {
      * e retorna True caso a inserção seja bem sucedida, e False caso não seja.
      */
     public boolean inserir(ConsultaMarcada consultaMarcada) {
-        ContentValues valores = new ContentValues();
-
-        valores.put(mBanco.ID_AGENDA_MEDICO_CONSULTA_MARCADA, consultaMarcada.getIdAgendaMedico());
-        valores.put(mBanco.USUARIO_CONSULTA_MARCADA, consultaMarcada.getUsuario().getId());
-        valores.put(mBanco.DATA_MARCACAO_CONSULTA_MARCADA, new SimpleDateFormat("yyyy-MM-dd").format(consultaMarcada.getDataMarcacaoConsulta()));
-        valores.put(mBanco.SITUACAO_CONSULTA_MARCADA, consultaMarcada.getSituacao().getNome());
-
-        db = mBanco.getWritableDatabase();
-
         try {
-            db.insert(mBanco.TB_CONSULTA_MARCADA, null, valores);
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String caminho = url + "inserir/" + consultaMarcada.getIdAgendaMedico() + "/"
+                    + consultaMarcada.getUsuario().getId() + "/" +
+                    Util.convertDateToStrInvertido(consultaMarcada.getDataMarcacaoConsulta());
+
+            String[] resposta = new WebServiceCliente().get(caminho, false);
+
             mAgendaMedicoDAO.alterar(consultaMarcada.getIdAgendaMedico(), Situacao.MARCADA);
+
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
-        } finally {
-            db.close();
         }
     }
 
-    /**
-     * @param cursor
-     * @return ConsultaMarcada
-     * <p/>
-     * Método que recebe por parâmetro um cursor, na linha onde o ponteiro está posicionado, e retorna
-     * um Bean de ConsultaMarcada.
-     * Utilizado em todos os métodos de seleção e listagem desta classe.
-     */
-    private ConsultaMarcada getConsultaMarcada(Cursor cursor) {
-        ConsultaMarcada consultaMarcada = new ConsultaMarcada();
-
-        consultaMarcada.setId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.ID_CONSULTA_MARCADA)));
-        consultaMarcada.setUsuario(mUsuarioDAO.selecionarPorId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.USUARIO_CONSULTA_MARCADA))));
-        consultaMarcada.setIdAgendaMedico(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.ID_AGENDA_MEDICO_CONSULTA_MARCADA)));
-        consultaMarcada.setDataMarcacaoConsulta(Date.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(mBanco.DATA_MARCACAO_CONSULTA_MARCADA))));
-
-        switch (cursor.getString(cursor.getColumnIndexOrThrow(mBanco.SITUACAO_CONSULTA_MARCADA))) {
-            case "D":
-                consultaMarcada.setSituacao(Situacao.DISPONIVEL);
-                break;
-            case "M":
-                consultaMarcada.setSituacao(Situacao.MARCADA);
-                break;
-            case "C":
-                consultaMarcada.setSituacao(Situacao.CANCELADA);
-                break;
-        }
-
-        return consultaMarcada;
-    }
 }
