@@ -69,7 +69,7 @@ public class ActivityLogin extends AppCompatActivity {
             return false;
         }
 
-        UsuarioDAO usuarioDAO = new UsuarioDAO(this);
+        UsuarioDAO usuarioDAO = new UsuarioDAO();
         /**
          * Busca um usuário pelo login informado na tela.
          */

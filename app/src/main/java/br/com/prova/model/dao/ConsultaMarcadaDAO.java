@@ -40,7 +40,7 @@ public class ConsultaMarcadaDAO {
     public ConsultaMarcadaDAO(Context context) {
         if (mBanco == null)
             mBanco = new Banco(context);
-        mUsuarioDAO = new UsuarioDAO(context);
+        mUsuarioDAO = new UsuarioDAO();
         mAgendaMedicoDAO = new AgendaMedicoDAO(context);
     }
 

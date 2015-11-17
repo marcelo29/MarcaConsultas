@@ -30,6 +30,7 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class AgendaMedicoDAO {
 
+    //ws ok
     private Banco mBanco;
     private SQLiteDatabase db;
     private MedicoDAO mMedicoDAO;

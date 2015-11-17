@@ -1,8 +1,5 @@
 package br.com.prova.model.dao;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
 
 import com.google.gson.Gson;
@@ -13,15 +10,18 @@ import br.com.prova.ws.WebServiceCliente;
 
 public class UsuarioDAO {
 
-    private Banco mBanco;
-    private SQLiteDatabase db;
-    private String local = ConfiguracoesWS.URL_APLICACAO + "usuario/";
+    //ws ok
+    //private Banco mBanco;
+    //private SQLiteDatabase db;
+    private String url = ConfiguracoesWS.URL_APLICACAO + "usuario/";
 
+    //private SQLiteDatabase db;
+/*
     public UsuarioDAO(Context context) {
         if (mBanco == null)
             mBanco = new Banco(context);
     }
-
+*/
     public Usuario selecionarPorLogin(final String login) {
         Usuario usuario = new Usuario();
 
@@ -30,7 +30,7 @@ public class UsuarioDAO {
                     .build();
             StrictMode.setThreadPolicy(policy);
 
-            String[] resposta = new WebServiceCliente().get(local + "selecionarPorLogin/" + login, false);
+            String[] resposta = new WebServiceCliente().get(url + "selecionarPorLogin/" + login, false);
 
             if (resposta[0].equals("200")) {
                 Gson g = new Gson();
@@ -57,7 +57,7 @@ public class UsuarioDAO {
                     .build();
             StrictMode.setThreadPolicy(policy);
 
-            String[] resposta = new WebServiceCliente().get(local + "selecionarPorId/" + id, false);
+            String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + id, false);
 
             if (resposta[0].equals("200")) {
                 Gson g = new Gson();
