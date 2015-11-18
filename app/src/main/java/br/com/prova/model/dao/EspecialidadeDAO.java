@@ -1,99 +1,114 @@
 package br.com.prova.model.dao;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.StrictMode;
 import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import br.com.prova.model.bean.Especialidade;
+import br.com.prova.ws.ConfiguracoesWS;
+import br.com.prova.ws.WebServiceCliente;
 
 /**
  * Created by Éverdes on 30/09/2015.
- *
+ * <p/>
  * Classe responsável por executar o CRUD com a tabela de Especialidade
  */
 public class EspecialidadeDAO {
 
+    //ws ok
     private Banco mBanco;
     private SQLiteDatabase db;
+    private String url = ConfiguracoesWS.URL_APLICACAO + "especialidade/";
 
     public EspecialidadeDAO(Context context) {
         if (mBanco == null)
-        mBanco = new Banco(context);
+            mBanco = new Banco(context);
     }
 
     /**
-     *
      * @param Id
      * @return Especialidade
-     *
+     * <p/>
      * Método que seleciona uma Especialidade, através de um Id passado por parâmetro
      */
     public Especialidade selecionarPorId(int Id) {
-        Especialidade especialidade = null;
-        Cursor cursor;
-        String sql = "select * from " + mBanco.TB_ESPECIALIDADE +
-                " where " + mBanco.ID_ESPECIALIDADE + "=" + Id;
+        Especialidade especialidade = new Especialidade();
 
-        db = mBanco.getReadableDatabase();
+        try {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
 
-        cursor = db.rawQuery(sql, null);
+            String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + Id, false);
 
-        while (cursor.moveToNext()) {
-            especialidade = getEspecialidade(cursor);
+            if (resposta[0].equals("200")) {
+                Gson g = new Gson();
+                especialidade = g.fromJson(resposta[1], Especialidade.class);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        db.close();
-        cursor.close();
 
         return especialidade;
     }
 
     /**
-     *
      * @return List<Especialidade>
-     *
+     * <p/>
      * Método que retorna a lista de todas as Especialidades
      */
     public List listar() {
-        Cursor cursor;
         List<Especialidade> especialidades = new ArrayList<>();
 
-        db = mBanco.getReadableDatabase();
-        cursor = db.rawQuery("select * from " + mBanco.TB_ESPECIALIDADE, null);
-
         try {
-            while (cursor.moveToNext())
-                especialidades.add(getEspecialidade(cursor));
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String[] resposta = new WebServiceCliente().get(url + "listar/", false);
+
+            if (resposta[0].equals("200")) {
+                String json = resposta[1];
+
+                if (json.equals("null")) {
+                    return null;
+                }
+
+                if (!json.contains("[")) {
+                    StringBuilder stringBuilder = new StringBuilder(json);
+                    stringBuilder.insert(10, "[");
+                    stringBuilder.insert(json.length(), "]");
+
+                    json = stringBuilder.toString();
+                }
+
+                Gson g = new Gson();
+
+                JsonParser parser = new JsonParser();
+
+                JsonArray array = null;
+
+                array = parser.parse(json).getAsJsonObject().getAsJsonArray("especialidades");
+
+                for (int i = 0; i < array.size(); i++) {
+                    Especialidade especialidade = g.fromJson(array.get(i), Especialidade.class);
+                    especialidades.add(especialidade);
+                }
+            }
         } catch (Exception e) {
-            Log.e("LocalAtendimento.listar()", e.getMessage());
-        } finally {
-            cursor.close();
-            db.close();
+            Log.e("ErroEspecialidadeListar", e.getMessage());
         }
 
         return especialidades;
-    }
-
-    /**
-     *
-     * @param cursor
-     * @return Especialidade
-     *
-     * Método que recebe por parâmetro um cursor, na linha onde o ponteiro está posicionado, e retorna
-     * um Bean de Especialidade.
-     * A principal utilidade do método é o reuso do mesmo, em todos os métodos de seleção e listagem desta classe
-     */
-    private Especialidade getEspecialidade(Cursor cursor) {
-        Especialidade especialidade = new Especialidade();
-
-        especialidade.setId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.ID_ESPECIALIDADE)));
-        especialidade.setNome(cursor.getString(cursor.getColumnIndexOrThrow(mBanco.NOME_ESPECIALIDADE)));
-
-        return especialidade;
     }
 
 }

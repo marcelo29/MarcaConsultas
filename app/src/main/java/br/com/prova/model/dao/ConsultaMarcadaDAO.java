@@ -1,8 +1,6 @@
 package br.com.prova.model.dao;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
 import android.util.Log;
@@ -12,8 +10,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +28,7 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class ConsultaMarcadaDAO {
 
+    //ws ok
     private Banco mBanco;
     private SQLiteDatabase db;
     private UsuarioDAO mUsuarioDAO;
@@ -155,32 +153,23 @@ public class ConsultaMarcadaDAO {
      * de acordo com os dados passados por parâmetro e retorna True caso a alteração seja
      * bem-sucedida e False caso não seja.
      */
-    public boolean cancelar(ConsultaMarcada consultaMarcada, String dataCancelamento) {
-        String sql = "update " + mBanco.TB_CONSULTA_MARCADA +
-                " set " + mBanco.SITUACAO_CONSULTA_MARCADA + " = '" + Situacao.CANCELADA.getNome() +
-                "', " + mBanco.DATA_CANCELAMENTO_CONSULTA_MARCADA + " = '" + dataCancelamento +
-                "' where " + mBanco.ID_CONSULTA_MARCADA + " = " + consultaMarcada.getId();
-
-        db = mBanco.getWritableDatabase();
-
+    public boolean cancelar(ConsultaMarcada consultaMarcada) {
         try {
-            db.execSQL(sql);
-            mAgendaMedicoDAO.alterar(consultaMarcada.getIdAgendaMedico(), Situacao.CANCELADA);
-            return true;
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+
+            String hoje = Util.getDataAtual(new Date());
+            String caminho = url + "cancelar/" + consultaMarcada.getId() + "/" + hoje;
+            String[] resposta = new WebServiceCliente().get(caminho, false);
+
+            return !resposta[1].isEmpty();
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
-        } finally {
-            db.close();
         }
     }
 
-    /**
-     * @param consultaMarcada
-     * @return boolean
-     * <p/>
-     * Método responsável por inserir na tabela de Consulta Marcada, um BEAN passado por parâmetro
-     * e retorna True caso a inserção seja bem sucedida, e False caso não seja.
-     */
     public boolean inserir(ConsultaMarcada consultaMarcada) {
         try {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
@@ -189,7 +178,7 @@ public class ConsultaMarcadaDAO {
 
             String caminho = url + "inserir/" + consultaMarcada.getIdAgendaMedico() + "/"
                     + consultaMarcada.getUsuario().getId() + "/" +
-                    Util.convertDateToStrInvertido(consultaMarcada.getDataMarcacaoConsulta());
+                    Util.getDataAtual(consultaMarcada.getDataMarcacaoConsulta());
 
             String[] resposta = new WebServiceCliente().get(caminho, false);
 

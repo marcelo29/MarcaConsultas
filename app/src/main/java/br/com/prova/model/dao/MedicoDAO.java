@@ -26,6 +26,7 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class MedicoDAO {
 
+    //ws ok
     private Banco mBanco;
     private SQLiteDatabase db;
     private EspecialidadeDAO mEspecialidadeDAO;
@@ -38,10 +39,9 @@ public class MedicoDAO {
     }
 
     /**
-     *
      * @param id
      * @return Medico
-     *
+     * <p/>
      * Método que seleciona um Medico, através de um Id passado por parâmetro
      */
     public Medico selecionarPorId(int id) {
@@ -66,9 +66,8 @@ public class MedicoDAO {
     }
 
     /**
-     *
      * @return List<Medico>
-     *
+     * <p/>
      * Método que retorna a lista de todos os Médicos
      */
     public List listar() {
@@ -110,16 +109,15 @@ public class MedicoDAO {
                 }
             }
         } catch (Exception e) {
-            Log.e("ErroAgendaListarPorSituacao", e.getMessage());
+            Log.e("ErroMedicoListar", e.getMessage());
         }
 
         return medicos;
     }
 
     /**
-     *
      * @return List<LocalAtendimento>
-     *
+     * <p/>
      * Método que retorna a lista dos Medicos que possuem determinada espcialidade informada no parâmetro
      */
     public List<Medico> listarPorEspecialidade(Especialidade especialidade) {
@@ -130,7 +128,7 @@ public class MedicoDAO {
                     .build();
             StrictMode.setThreadPolicy(policy);
 
-            String[] resposta = new WebServiceCliente().get(url + "listarPorEspecialidade/"+especialidade.getId(), false);
+            String[] resposta = new WebServiceCliente().get(url + "listarPorEspecialidade/" + especialidade.getId(), false);
 
             if (resposta[0].equals("200")) {
                 String json = resposta[1];
@@ -161,30 +159,10 @@ public class MedicoDAO {
                 }
             }
         } catch (Exception e) {
-            Log.e("ErroAgendaListarPorEspecialidade", e.getMessage());
+            Log.e("ErroMedicoListarPorEspecialidade", e.getMessage());
         }
 
         return medicos;
     }
 
-    /**
-     *
-     * @param cursor
-     * @return Medico
-     *
-     * Método que recebe por parâmetro um cursor, na linha onde o ponteiro está posicionado, e retorna
-     * um Bean de Medico.
-     * Utilizado em todos os métodos de seleção e listagem desta classe
-     */
-    private Medico getMedico(Cursor cursor) {
-        Medico medico = new Medico();
-
-        medico.setId(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.ID_MEDICO)));
-        medico.setNome(cursor.getString(cursor.getColumnIndexOrThrow(mBanco.NOME_MEDICO)));
-        medico.setCrm(cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.CRM_MEDICO)));
-        medico.setEspecialidade(mEspecialidadeDAO.selecionarPorId(
-                cursor.getInt(cursor.getColumnIndexOrThrow(mBanco.ESPECIALIDADE_MEDICO))));
-
-        return medico;
-    }
 }

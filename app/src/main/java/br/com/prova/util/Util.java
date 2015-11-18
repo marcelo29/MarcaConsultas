@@ -24,7 +24,11 @@ public class Util {
      * Método que retorna um String com a data atual, em formato 'ano-mes-dia'
      */
     public static String getToday() {
-        return new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        return new SimpleDateFormat("dd/MM/yyyy").format(Calendar.getInstance().getTime());
+    }
+
+    public static String getDataAtual(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd").format(date.getTime());
     }
 
     /**
@@ -34,7 +38,7 @@ public class Util {
      * Método que recebe um objeto do tipo Date, e retorna um String com a data atual, em formato 'dia/mes/ano'
      */
     public static String convertDateToStr(Date data) {
-        return new SimpleDateFormat("dd/MM/yyyy").format(data.getTime());
+        return new SimpleDateFormat("dd/MM/yyyy").format(data);
     }
 
     /**
@@ -44,7 +48,7 @@ public class Util {
      * Método que recebe um objeto do tipo Date, e retorna um String com a data atual, em formato 'ano-mes-dia'
      */
     public static String convertDateToStrInvertido(Date data) {
-        return new SimpleDateFormat("yyyy-MM-dd").format(data.getTime());
+        return new SimpleDateFormat("yyyy/MM/dd").format(data.getTime());
     }
 
     /**

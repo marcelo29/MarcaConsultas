@@ -161,9 +161,8 @@ public class ActivityListaConsultasMarcadas extends AppCompatActivity {
         if (criticarHoras()) {
             Util.showMessage("Aviso", "Não é possível desmarcar consultas com menos de 24 horas.", this);
             return;
-        }
-        else if (mConsultaSelecionada.getUsuario().getId() == mUsuarioLogado.getId())
-            if (mConsultaMarcadaDAO.cancelar(mConsultaSelecionada, Util.getToday())) {
+        } else if (mConsultaSelecionada.getUsuario().getId() == mUsuarioLogado.getId())
+            if (mConsultaMarcadaDAO.cancelar(mConsultaSelecionada)) {
                 atualizarLista();
                 Util.enviarEmail(ActivityListaConsultasMarcadas.this, new String[]{mUsuarioLogado.getEmail()}, "Consulta desmarcada pelo usuario.");
             } else
@@ -175,13 +174,16 @@ public class ActivityListaConsultasMarcadas extends AppCompatActivity {
     /**
      * Método que verifica a quantidade de horas faltantes, para a realização da consulta,
      * caso a diferença seja de menos de 24 horas ele retorna True, caso contrário False.
+     *
      * @return
      */
     private boolean criticarHoras() {
         Date dataConsulta = null;
 
         try {
-            dataConsulta = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(mAgendaMedicoSelecionado.getData() + " " + mAgendaMedicoSelecionado.getHora());
+            String str = new SimpleDateFormat("dd/MM/yyyy").format(mAgendaMedicoSelecionado.getData());
+
+            dataConsulta = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(str + " " + mAgendaMedicoSelecionado.getHora());
         } catch (ParseException e) {
             e.printStackTrace();
         }

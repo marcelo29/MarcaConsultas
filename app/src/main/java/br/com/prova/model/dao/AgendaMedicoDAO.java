@@ -124,14 +124,6 @@ public class AgendaMedicoDAO {
         return agendas;
     }
 
-    /**
-     * @param idAgendaMedico
-     * @param situacao
-     * @return boolean
-     * <p/>
-     * Método que altera o valor da Situação, da Agenda Medico, especificados por parâmetro
-     * e retorna True caso seja bem-sucedida e False caso não seja.
-     */
     public boolean alterar(int idAgendaMedico, Situacao situacao) {
         try {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
