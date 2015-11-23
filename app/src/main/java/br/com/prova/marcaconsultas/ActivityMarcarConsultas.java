@@ -1,5 +1,6 @@
 package br.com.prova.marcaconsultas;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -37,7 +38,7 @@ import br.com.prova.util.Util;
 
 /**
  * Created by Éverdes on 27/09/2015.
- *
+ * <p/>
  * Activity responsavel por exibir a Agenda dos médicos, e por controlar e permitir, a marcação de consultas.
  */
 public class ActivityMarcarConsultas extends AppCompatActivity {
@@ -63,11 +64,11 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_marcar_consultas);
 
-        mAgendaMedicoDAO = new AgendaMedicoDAO(this);
-        mConsultaMarcadaDAO = new ConsultaMarcadaDAO(this);
-        mLocalAtendimentoDAO = new LocalAtendimentoDAO(this);
-        mMedicoDAO = new MedicoDAO(this);
-        mEspecialidadeDAO = new EspecialidadeDAO(this);
+        mAgendaMedicoDAO = new AgendaMedicoDAO();
+        mConsultaMarcadaDAO = new ConsultaMarcadaDAO();
+        mLocalAtendimentoDAO = new LocalAtendimentoDAO();
+        mMedicoDAO = new MedicoDAO();
+        mEspecialidadeDAO = new EspecialidadeDAO();
 
         mLvAgendaMedico = (ListView) findViewById(R.id.lvAgendaMedico);
 
@@ -138,7 +139,7 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
                         mMedicosFiltro = mMedicoDAO.listarPorEspecialidade(mEspecialidades.get(position));
 
                         mListaAgendaMedico.clear();
-                        for(Medico medico : mMedicosFiltro) {
+                        for (Medico medico : mMedicosFiltro) {
                             mListaAgendaMedico.addAll(mAgendaMedicoDAO.listarPorMedico(medico));
                         }
                         break;
@@ -178,7 +179,15 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
                     } else if (mConsultaMarcadaDAO.inserir(getConsultaMarcada(agendaMedicoSelecionadas.get(0)))) {
                         listarAgendaMedico();
                         atualizarLista();
-                        Util.enviarEmail(ActivityMarcarConsultas.this, new String[]{mUsuarioLogado.getEmail()}, "A sua consulta foi marcada com sucesso.");
+
+                        Intent intent = new Intent(Intent.ACTION_SEND);
+
+                        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{mUsuarioLogado.getEmail()});
+                        intent.putExtra(Intent.EXTRA_SUBJECT, "Consulta");
+                        intent.putExtra(Intent.EXTRA_TEXT, "Consulta marcada pelo usuario.");
+
+                        intent.setType("message/rfc822");
+                        startActivity(intent);
                     } else
                         Util.showMessage("Aviso", "Não foi possível marcar consulta.", ActivityMarcarConsultas.this);
                 } else {
@@ -204,6 +213,7 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
 
     /**
      * Método que recebe uma lista e seta no Spinner, para que o usuário possa escolher um filtro.
+     *
      * @param listaSpinner
      */
     private void alimentarSpinner(List<String> listaSpinner) {
@@ -214,6 +224,7 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
 
     /**
      * Método que recebe uma Agenda Medico e retorna um BEAN de Consulta Marcada.
+     *
      * @param agendaMedico
      * @return
      */
@@ -248,10 +259,7 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
     }
 
     /**
-     *
-     * @return
-     *
-     * Método que retorna os itens selecionados no ListView.
+     * @return Método que retorna os itens selecionados no ListView.
      */
     private List<AgendaMedico> getAgendaMedicoSelecionadas() {
         List<AgendaMedico> agendaMedicoSelecionadas = new ArrayList<>();
@@ -269,11 +277,8 @@ public class ActivityMarcarConsultas extends AppCompatActivity {
     }
 
     /**
-     *
      * @param agendaMedicoSelecionada
-     * @return
-     *
-     * Método que verifica se o usuário marcou outra consulta para a mesma especialidade, num período
+     * @return Método que verifica se o usuário marcou outra consulta para a mesma especialidade, num período
      * inferior a 30 dias.
      */
     private boolean criticarCarencia(AgendaMedico agendaMedicoSelecionada) {

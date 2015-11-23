@@ -48,6 +48,7 @@ public class WebServiceCliente {
 
     public final String[] post(String url, String json) {
         String[] result = new String[2];
+
         try {
 
             HttpPost httpPost = new HttpPost(new URI(url));

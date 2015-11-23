@@ -1,8 +1,5 @@
 package br.com.prova.model.dao;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
 import android.util.Log;
 
@@ -11,12 +8,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
 import br.com.prova.Enumerators.Situacao;
 import br.com.prova.model.bean.AgendaMedico;
+import br.com.prova.model.bean.ConsultaMarcada;
 import br.com.prova.model.bean.LocalAtendimento;
 import br.com.prova.model.bean.Medico;
 import br.com.prova.util.Util;
@@ -30,39 +27,27 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class AgendaMedicoDAO {
 
-    //ws ok
-    private Banco mBanco;
-    private SQLiteDatabase db;
+    //ws
     private MedicoDAO mMedicoDAO;
     private LocalAtendimentoDAO mLocalAtendimentoDAO;
     private String url = ConfiguracoesWS.URL_APLICACAO + "agenda/";
 
-    public AgendaMedicoDAO(Context context) {
-
-        if (mBanco == null)
-            mBanco = new Banco(context);
-        mMedicoDAO = new MedicoDAO(context);
-        mLocalAtendimentoDAO = new LocalAtendimentoDAO(context);
+    public AgendaMedicoDAO() {
+        mMedicoDAO = new MedicoDAO();
+        mLocalAtendimentoDAO = new LocalAtendimentoDAO();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                .build();
+        StrictMode.setThreadPolicy(policy);
     }
 
-    /**
-     * @param id
-     * @return AgendaMedico
-     * <p/>
-     * Método que seleciona uma AgendaMedico, através de um Id passado por parâmetro
-     */
     public AgendaMedico selecionarPorId(int id) {
         AgendaMedico agendaMedico = new AgendaMedico();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + id, false);
 
             if (resposta[0].equals("200")) {
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
                 agendaMedico = g.fromJson(resposta[1], AgendaMedico.class);
             }
         } catch (Exception e) {
@@ -72,20 +57,10 @@ public class AgendaMedicoDAO {
         return agendaMedico;
     }
 
-    /**
-     * @param situacao
-     * @return List<AgendaMedico>
-     * <p/>
-     * Método que retorna uma lista de AgendaMedico, através do valor da Situação, passado por parâmetro
-     */
     public List<AgendaMedico> listarPorSituacao(Situacao situacao) {
         List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "listarPorSituacao/" +
                     situacao.getNome(), false);
 
@@ -104,7 +79,7 @@ public class AgendaMedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
                 JsonParser parser = new JsonParser();
 
@@ -124,35 +99,10 @@ public class AgendaMedicoDAO {
         return agendas;
     }
 
-    public boolean alterar(int idAgendaMedico, Situacao situacao) {
-        try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
-            String[] resposta = new WebServiceCliente().get(url + "alterar/" + idAgendaMedico + "/" + situacao.getNome(), false);
-
-            return !resposta[1].isEmpty();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * @param localAtendimento
-     * @return List<AgendaMedico>
-     * <p/>
-     * Método que retorna uma lista de AgendaMedico, de um determiando Local de Atendimento
-     */
     public List<AgendaMedico> listarPorLocalAtendimento(LocalAtendimento localAtendimento) {
         List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "listarPorLocalAtendimento/" +
                     localAtendimento.getId(), false);
 
@@ -171,7 +121,7 @@ public class AgendaMedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
                 JsonParser parser = new JsonParser();
 
@@ -191,20 +141,10 @@ public class AgendaMedicoDAO {
         return agendas;
     }
 
-    /**
-     * @param medico
-     * @return List<AgendaMedico>
-     * <p/>
-     * Método que retorna uma lista de AgendaMedico, de um determinado medico
-     */
     public List<AgendaMedico> listarPorMedico(Medico medico) {
         List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "listarPorMedico/" +
                     medico.getId(), false);
 
@@ -223,7 +163,7 @@ public class AgendaMedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
                 JsonParser parser = new JsonParser();
 
@@ -243,20 +183,10 @@ public class AgendaMedicoDAO {
         return agendas;
     }
 
-    /**
-     * @param data
-     * @return List<AgendaMedico>
-     * <p/>
-     * Método que retorna uma lista de AgendaMedico, através de uma data passada por parâmetro
-     */
     public List<AgendaMedico> listarPorData(java.util.Date data) {
         List<AgendaMedico> agendas = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "listarPorData/" +
                     Util.convertDateToStrInvertido(data), false);
 
@@ -275,7 +205,7 @@ public class AgendaMedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
                 JsonParser parser = new JsonParser();
 
@@ -295,4 +225,18 @@ public class AgendaMedicoDAO {
         return agendas;
     }
 
+    public boolean alterar(ConsultaMarcada consulta) {
+        try {
+            Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataEUA).create();
+
+            String consultaJson = gson.toJson(consulta);
+
+            String[] resposta = new WebServiceCliente().post(url + "alterar", consultaJson);
+
+            return !resposta[1].isEmpty();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

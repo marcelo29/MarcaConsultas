@@ -1,12 +1,9 @@
 package br.com.prova.model.dao;
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
@@ -24,14 +21,13 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class EspecialidadeDAO {
 
-    //ws ok
-    private Banco mBanco;
-    private SQLiteDatabase db;
+    //ws
     private String url = ConfiguracoesWS.URL_APLICACAO + "especialidade/";
 
-    public EspecialidadeDAO(Context context) {
-        if (mBanco == null)
-            mBanco = new Banco(context);
+    public EspecialidadeDAO() {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                .build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     /**
@@ -44,10 +40,6 @@ public class EspecialidadeDAO {
         Especialidade especialidade = new Especialidade();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + Id, false);
 
             if (resposta[0].equals("200")) {
@@ -61,19 +53,10 @@ public class EspecialidadeDAO {
         return especialidade;
     }
 
-    /**
-     * @return List<Especialidade>
-     * <p/>
-     * Método que retorna a lista de todas as Especialidades
-     */
     public List listar() {
         List<Especialidade> especialidades = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "listar/", false);
 
             if (resposta[0].equals("200")) {

@@ -2,9 +2,7 @@ package br.com.prova.util;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
-import android.support.v7.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,17 +16,14 @@ import br.com.prova.marcaconsultas.R;
  */
 public class Util {
 
-    /**
-     * @return String
-     * <p/>
-     * Método que retorna um String com a data atual, em formato 'ano-mes-dia'
-     */
+    public static final String formatoDataBR = "dd/MM/yyyy", formatoDataEUA = "yyyy-MM-dd";
+
     public static String getToday() {
-        return new SimpleDateFormat("dd/MM/yyyy").format(Calendar.getInstance().getTime());
+        return new SimpleDateFormat(formatoDataBR).format(Calendar.getInstance().getTime());
     }
 
     public static String getDataAtual(Date date) {
-        return new SimpleDateFormat("yyyy-MM-dd").format(date.getTime());
+        return new SimpleDateFormat(formatoDataEUA).format(date.getTime());
     }
 
     /**
@@ -38,7 +33,7 @@ public class Util {
      * Método que recebe um objeto do tipo Date, e retorna um String com a data atual, em formato 'dia/mes/ano'
      */
     public static String convertDateToStr(Date data) {
-        return new SimpleDateFormat("dd/MM/yyyy").format(data);
+        return new SimpleDateFormat(formatoDataBR).format(data);
     }
 
     /**
@@ -48,7 +43,7 @@ public class Util {
      * Método que recebe um objeto do tipo Date, e retorna um String com a data atual, em formato 'ano-mes-dia'
      */
     public static String convertDateToStrInvertido(Date data) {
-        return new SimpleDateFormat("yyyy/MM/dd").format(data.getTime());
+        return new SimpleDateFormat(formatoDataEUA).format(data.getTime());
     }
 
     /**
@@ -66,25 +61,6 @@ public class Util {
         AlertDialog dialog = builder.create();
         dialog.setTitle(titulo);
         dialog.show();
-    }
-
-    /**
-     * @param activity
-     * @param emailDestinatario
-     * @param corpoEmail        Método responsável por enviar um e-mail
-     */
-    public static void enviarEmail(AppCompatActivity activity, String[] emailDestinatario, String corpoEmail) {
-        String[] emailRemetente = {"masasp29@gmail.com"};
-
-        Intent itEnviarEmail = new Intent(Intent.ACTION_SEND);
-
-        itEnviarEmail.putExtra(Intent.EXTRA_EMAIL, emailRemetente);
-        itEnviarEmail.putExtra(Intent.EXTRA_CC, emailDestinatario);
-        itEnviarEmail.putExtra(Intent.EXTRA_SUBJECT, "Consulta");
-        itEnviarEmail.putExtra(Intent.EXTRA_TEXT, corpoEmail);
-
-        itEnviarEmail.setType("message/rfc822");
-        activity.startActivity(Intent.createChooser(itEnviarEmail, emailDestinatario[0]));
     }
 
     public static boolean verificaConexao(Context ctx) {

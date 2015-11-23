@@ -11,53 +11,19 @@ import br.com.prova.ws.WebServiceCliente;
 public class UsuarioDAO {
 
     //ws ok
-    //private Banco mBanco;
-    //private SQLiteDatabase db;
     private String url = ConfiguracoesWS.URL_APLICACAO + "usuario/";
 
-    //private SQLiteDatabase db;
-/*
-    public UsuarioDAO(Context context) {
-        if (mBanco == null)
-            mBanco = new Banco(context);
+    public UsuarioDAO() {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                .build();
+        StrictMode.setThreadPolicy(policy);
     }
-*/
+
     public Usuario selecionarPorLogin(final String login) {
         Usuario usuario = new Usuario();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "selecionarPorLogin/" + login, false);
-
-            if (resposta[0].equals("200")) {
-                Gson g = new Gson();
-                usuario = g.fromJson(resposta[1], Usuario.class);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return usuario;
-    }
-
-    /**
-     * @param id
-     * @return Usuario
-     * <p/>
-     * Método que seleciona um Usuario, através de um Id passado por parâmetro
-     */
-    public Usuario selecionarPorId(int id) {
-        Usuario usuario = new Usuario();
-
-        try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
-            String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + id, false);
 
             if (resposta[0].equals("200")) {
                 Gson g = new Gson();

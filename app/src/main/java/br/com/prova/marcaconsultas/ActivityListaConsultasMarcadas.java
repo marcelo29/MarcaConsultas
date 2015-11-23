@@ -50,7 +50,7 @@ public class ActivityListaConsultasMarcadas extends AppCompatActivity {
          */
         mUsuarioLogado = (Usuario) getIntent().getSerializableExtra("usuarioLogado");
 
-        mConsultaMarcadaDAO = new ConsultaMarcadaDAO(this);
+        mConsultaMarcadaDAO = new ConsultaMarcadaDAO();
 
         mFabNovo = (FloatingActionButton) findViewById(R.id.fabNovo);
         mFabNovo.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +81,7 @@ public class ActivityListaConsultasMarcadas extends AppCompatActivity {
                  */
                 mConsultaSelecionada = mConsultasMarcadas.get(position);
 
-                AgendaMedicoDAO agendaMedicoDAO = new AgendaMedicoDAO(getApplicationContext());
+                AgendaMedicoDAO agendaMedicoDAO = new AgendaMedicoDAO();
                 /**
                  * Pega a AgendaMedico do item selecionado no ListView
                  */
@@ -164,7 +164,16 @@ public class ActivityListaConsultasMarcadas extends AppCompatActivity {
         } else if (mConsultaSelecionada.getUsuario().getId() == mUsuarioLogado.getId())
             if (mConsultaMarcadaDAO.cancelar(mConsultaSelecionada)) {
                 atualizarLista();
-                Util.enviarEmail(ActivityListaConsultasMarcadas.this, new String[]{mUsuarioLogado.getEmail()}, "Consulta desmarcada pelo usuario.");
+
+                Intent intent = new Intent(Intent.ACTION_SEND);
+
+                // envia email avisando q foi desmarcada
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{mUsuarioLogado.getEmail()});
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Consulta");
+                intent.putExtra(Intent.EXTRA_TEXT, "Consulta desmarcada pelo usuario.");
+
+                intent.setType("message/rfc822");
+                startActivity(intent);
             } else
                 Util.showMessage("Aviso", "Não foi possível desmarcar esta consulta.", this);
         else

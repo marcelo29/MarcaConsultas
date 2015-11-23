@@ -1,13 +1,9 @@
 package br.com.prova.model.dao;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
@@ -26,32 +22,21 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class MedicoDAO {
 
-    //ws ok
-    private Banco mBanco;
-    private SQLiteDatabase db;
+    //ws
     private EspecialidadeDAO mEspecialidadeDAO;
     private String url = ConfiguracoesWS.URL_APLICACAO + "medico/";
 
-    public MedicoDAO(Context context) {
-        if (mBanco == null)
-            mBanco = new Banco(context);
-        mEspecialidadeDAO = new EspecialidadeDAO(context);
+    public MedicoDAO() {
+        mEspecialidadeDAO = new EspecialidadeDAO();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
+                .build();
+        StrictMode.setThreadPolicy(policy);
     }
 
-    /**
-     * @param id
-     * @return Medico
-     * <p/>
-     * Método que seleciona um Medico, através de um Id passado por parâmetro
-     */
     public Medico selecionarPorId(int id) {
         Medico medico = new Medico();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + id, false);
 
             if (resposta[0].equals("200")) {
@@ -65,20 +50,11 @@ public class MedicoDAO {
         return medico;
     }
 
-    /**
-     * @return List<Medico>
-     * <p/>
-     * Método que retorna a lista de todos os Médicos
-     */
     public List listar() {
         List<Medico> medicos = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
-            String[] resposta = new WebServiceCliente().get(url + "listar/", false);
+            String[] resposta = new WebServiceCliente().get(url + "listar", false);
 
             if (resposta[0].equals("200")) {
                 String json = resposta[1];
@@ -95,7 +71,7 @@ public class MedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new Gson();
 
                 JsonParser parser = new JsonParser();
 
@@ -115,19 +91,10 @@ public class MedicoDAO {
         return medicos;
     }
 
-    /**
-     * @return List<LocalAtendimento>
-     * <p/>
-     * Método que retorna a lista dos Medicos que possuem determinada espcialidade informada no parâmetro
-     */
     public List<Medico> listarPorEspecialidade(Especialidade especialidade) {
         List<Medico> medicos = new ArrayList<>();
 
         try {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll()
-                    .build();
-            StrictMode.setThreadPolicy(policy);
-
             String[] resposta = new WebServiceCliente().get(url + "listarPorEspecialidade/" + especialidade.getId(), false);
 
             if (resposta[0].equals("200")) {
@@ -145,7 +112,7 @@ public class MedicoDAO {
                     json = stringBuilder.toString();
                 }
 
-                Gson g = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
+                Gson g = new Gson();
 
                 JsonParser parser = new JsonParser();
 

@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import br.com.prova.marcaconsultas.R;
@@ -66,7 +65,7 @@ public class AdapterListaConsulta extends BaseAdapter {
             ConsultaMarcada consultaMarcada = mLista.get(position);
 
             //TODO analisar o local certo pra colocar esse DAO
-            AgendaMedicoDAO agendaMedicoDAO = new AgendaMedicoDAO(mContexto);
+            AgendaMedicoDAO agendaMedicoDAO = new AgendaMedicoDAO();
             AgendaMedico agendaMedico = new AgendaMedico();
             agendaMedico = agendaMedicoDAO.selecionarPorId(consultaMarcada.getIdAgendaMedico());
 
