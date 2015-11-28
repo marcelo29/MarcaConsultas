@@ -5,8 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ import br.com.prova.ws.WebServiceCliente;
 
 public class ConsultaMarcadaDAO {
 
-    //ws
+    // ws ok
     private UsuarioDAO mUsuarioDAO;
     private AgendaMedicoDAO mAgendaMedicoDAO;
     private String url = ConfiguracoesWS.URL_APLICACAO + "consulta/";
@@ -41,44 +40,17 @@ public class ConsultaMarcadaDAO {
             if (resposta[0].equals("200")) {
                 String json = resposta[1];
 
-                if (json.equals("null")) {
-                    return null;
-                }
+                Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
-
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("consultas");
-
-                for (int i = 0; i < array.size(); i++) {
-                    ConsultaMarcada consulta = g.fromJson(array.get(i), ConsultaMarcada.class);
-                    consultas.add(consulta);
-                }
+                consultas = gson.fromJson(json, new TypeToken<ArrayList<ConsultaMarcada>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroConsultaListar", e.getMessage());
         }
-
         return consultas;
     }
 
-    /**
-     * @param usuario
-     * @return List<ConsultaMarcada>
-     * <p/>
-     * Método que lista todas as Consultas Marcadas pelo Usuário passado por parâmetro
-     */
     public List<ConsultaMarcada> listarMarcadasPorUsuario(Usuario usuario) {
         List<ConsultaMarcada> consultas = new ArrayList<>();
 
@@ -88,30 +60,10 @@ public class ConsultaMarcadaDAO {
             if (resposta[0].equals("200")) {
                 String json = resposta[1];
 
-                if (json.equals("null")) {
-                    return null;
-                }
+                Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
-
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("consultas");
-
-                for (int i = 0; i < array.size(); i++) {
-                    ConsultaMarcada consulta = g.fromJson(array.get(i), ConsultaMarcada.class);
-                    consultas.add(consulta);
-                }
+                consultas = gson.fromJson(json, new TypeToken<ArrayList<ConsultaMarcada>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroConsultaListarPorUsuario", e.getMessage());

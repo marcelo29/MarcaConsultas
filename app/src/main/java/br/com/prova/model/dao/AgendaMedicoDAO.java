@@ -5,8 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ import br.com.prova.ws.WebServiceCliente;
  */
 public class AgendaMedicoDAO {
 
-    //ws
+    // ws ok
     private MedicoDAO mMedicoDAO;
     private LocalAtendimentoDAO mLocalAtendimentoDAO;
     private String url = ConfiguracoesWS.URL_APLICACAO + "agenda/";
@@ -71,26 +70,10 @@ public class AgendaMedicoDAO {
                     return null;
                 }
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
+                Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
-
-                for (int i = 0; i < array.size(); i++) {
-                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
-                    agendas.add(agenda);
-                }
+                agendas = gson.fromJson(json, new TypeToken<ArrayList<AgendaMedico>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroAgendaListarPorSituacao", e.getMessage());
@@ -113,26 +96,10 @@ public class AgendaMedicoDAO {
                     return null;
                 }
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
+                Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
-
-                for (int i = 0; i < array.size(); i++) {
-                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
-                    agendas.add(agenda);
-                }
+                agendas = gson.fromJson(json, new TypeToken<ArrayList<AgendaMedico>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroAgendaListarPorLocalAtendimento", e.getMessage());
@@ -155,26 +122,10 @@ public class AgendaMedicoDAO {
                     return null;
                 }
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
+                Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
-
-                for (int i = 0; i < array.size(); i++) {
-                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
-                    agendas.add(agenda);
-                }
+                agendas = gson.fromJson(json, new TypeToken<ArrayList<AgendaMedico>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroAgendaListarPorMedico", e.getMessage());
@@ -197,26 +148,10 @@ public class AgendaMedicoDAO {
                     return null;
                 }
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
+                Gson gson = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
 
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new GsonBuilder().setDateFormat(Util.formatoDataBR).create();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("agendas");
-
-                for (int i = 0; i < array.size(); i++) {
-                    AgendaMedico agenda = g.fromJson(array.get(i), AgendaMedico.class);
-                    agendas.add(agenda);
-                }
+                agendas = gson.fromJson(json, new TypeToken<ArrayList<AgendaMedico>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroAgendaListarPorData", e.getMessage());

@@ -4,8 +4,7 @@ import android.os.StrictMode;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,23 +32,6 @@ public class MedicoDAO {
         StrictMode.setThreadPolicy(policy);
     }
 
-    public Medico selecionarPorId(int id) {
-        Medico medico = new Medico();
-
-        try {
-            String[] resposta = new WebServiceCliente().get(url + "selecionarPorId/" + id, false);
-
-            if (resposta[0].equals("200")) {
-                Gson g = new Gson();
-                medico = g.fromJson(resposta[1], Medico.class);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return medico;
-    }
-
     public List listar() {
         List<Medico> medicos = new ArrayList<>();
 
@@ -63,26 +45,10 @@ public class MedicoDAO {
                     return null;
                 }
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
+                Gson gson = new Gson();
 
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new Gson();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("medicos");
-
-                for (int i = 0; i < array.size(); i++) {
-                    Medico medico = g.fromJson(array.get(i), Medico.class);
-                    medicos.add(medico);
-                }
+                medicos = gson.fromJson(json, new TypeToken<ArrayList<Medico>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroMedicoListar", e.getMessage());
@@ -104,26 +70,10 @@ public class MedicoDAO {
                     return null;
                 }
 
-                if (!json.contains("[")) {
-                    StringBuilder stringBuilder = new StringBuilder(json);
-                    stringBuilder.insert(10, "[");
-                    stringBuilder.insert(json.length(), "]");
+                Gson gson = new Gson();
 
-                    json = stringBuilder.toString();
-                }
-
-                Gson g = new Gson();
-
-                JsonParser parser = new JsonParser();
-
-                JsonArray array = null;
-
-                array = parser.parse(json).getAsJsonObject().getAsJsonArray("medicos");
-
-                for (int i = 0; i < array.size(); i++) {
-                    Medico medico = g.fromJson(array.get(i), Medico.class);
-                    medicos.add(medico);
-                }
+                medicos = gson.fromJson(json, new TypeToken<ArrayList<Medico>>() {
+                }.getType());
             }
         } catch (Exception e) {
             Log.e("ErroMedicoListarPorEspecialidade", e.getMessage());
